@@ -252,20 +252,13 @@ namespace FrozenFrontier.UI
                 childrenToMove.Add(child);
             }
 
-            GameObject viewportGo = new GameObject(ViewportName, typeof(RectTransform), typeof(Image), typeof(Mask));
+            GameObject viewportGo = new GameObject(ViewportName, typeof(RectTransform), typeof(RectMask2D));
             RectTransform viewportRect = viewportGo.GetComponent<RectTransform>();
             viewportRect.SetParent(panelRoot, false);
             viewportRect.anchorMin = Vector2.zero;
             viewportRect.anchorMax = Vector2.one;
             viewportRect.offsetMin = Vector2.zero;
             viewportRect.offsetMax = Vector2.zero;
-
-            Image viewportImage = viewportGo.GetComponent<Image>();
-            viewportImage.color = new Color(0f, 0f, 0f, 0f);
-            viewportImage.raycastTarget = true;
-
-            Mask viewportMask = viewportGo.GetComponent<Mask>();
-            viewportMask.showMaskGraphic = false;
 
             GameObject contentGo = new GameObject(ContentName, typeof(RectTransform));
             RectTransform contentRect = contentGo.GetComponent<RectTransform>();

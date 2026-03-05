@@ -50,7 +50,7 @@ namespace FrozenFrontier.Core
         [Header("Display")]
         [SerializeField] private bool forceNativeFullscreenOnStart = true;
         [SerializeField] private FullScreenMode fullscreenModeOnStart = FullScreenMode.FullScreenWindow;
-        [SerializeField] private bool applyResolutionInEditor = false;
+        [SerializeField] private bool applyResolutionInEditor = true;
 
         private float autosaveTimer;
         private bool isBootstrapped;

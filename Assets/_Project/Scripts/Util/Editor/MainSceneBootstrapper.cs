@@ -31,7 +31,7 @@ namespace FrozenFrontier.Util.Editor
         [MenuItem("Tools/Frozen Frontier/Generate Main Scene (One Click)")]
         public static void GenerateMainScene()
         {
-            bool confirmed = EditorUtility.DisplayDialog(
+            bool confirmed = Application.isBatchMode || EditorUtility.DisplayDialog(
                 "Frozen Frontier Scene Generator",
                 "This will create a fresh Main scene and overwrite Assets/_Project/Scenes/Main.unity. Continue?",
                 "Generate",
@@ -83,15 +83,22 @@ namespace FrozenFrontier.Util.Editor
             Canvas canvas = CreateCanvas();
             CreateAtmosphereBackdrop(canvas.transform);
 
-            GameObject resourceBar = CreateTopPanel("ResourceBar", canvas.transform, 95f, new Color(0.05f, 0.1f, 0.16f, 0.94f), true);
-            GameObject leftMenu = CreateLeftPanel("LeftMenu", canvas.transform, 250f, 95f, 0f, new Color(0.03f, 0.07f, 0.12f, 0.93f), true);
+            const float topBarHeight = 94f;
+            const float uiMargin = 14f;
+            const float actionMenuWidth = 252f;
+            const float contextHostWidth = 560f;
 
-            GameObject buildPanel = CreateContentPanel("BuildMenuPanel", canvas.transform, 260f, 105f, 20f, 20f, new Color(0.06f, 0.11f, 0.17f, 0.94f), false);
-            GameObject survivorPanel = CreateContentPanel("SurvivorPanel", canvas.transform, 260f, 105f, 20f, 20f, new Color(0.06f, 0.11f, 0.17f, 0.94f), false);
-            GameObject mapPanel = CreateContentPanel("MapPanel", canvas.transform, 260f, 105f, 20f, 20f, new Color(0.06f, 0.11f, 0.17f, 0.94f), false);
+            GameObject resourceBar = CreateTopPanel("ResourceBar", canvas.transform, topBarHeight, new Color(0.05f, 0.1f, 0.16f, 0.94f), true);
+            GameObject actionMenu = CreateActionMenuPanel("ActionMenu", canvas.transform, actionMenuWidth, topBarHeight + uiMargin, uiMargin, new Color(0.03f, 0.07f, 0.12f, 0.93f), true);
+            GameObject contextPanelHost = CreateContextPanelHost("ContextPanelHost", canvas.transform, contextHostWidth, topBarHeight + uiMargin, uiMargin, uiMargin, new Color(0.04f, 0.08f, 0.13f, 0.78f));
 
-            GameObject eventPopup = CreateCenteredPanel("EventPopup", canvas.transform, new Vector2(740f, 460f), new Color(0.08f, 0.13f, 0.2f, 0.97f), true);
-            GameObject toasts = CreateBottomCenterPanel("Toasts", canvas.transform, new Vector2(900f, 74f), new Vector2(0f, 24f), new Color(0.03f, 0.08f, 0.14f, 0.82f), true);
+            GameObject buildPanel = CreateContextContentPanel("BuildMenuPanel", contextPanelHost.transform, new Color(0.06f, 0.11f, 0.17f, 0.94f), false);
+            GameObject survivorPanel = CreateContextContentPanel("SurvivorPanel", contextPanelHost.transform, new Color(0.06f, 0.11f, 0.17f, 0.94f), false);
+            GameObject mapPanel = CreateContextContentPanel("MapPanel", contextPanelHost.transform, new Color(0.06f, 0.11f, 0.17f, 0.94f), false);
+
+            GameObject overlayRoot = CreateOverlayRoot("OverlayRoot", canvas.transform);
+            GameObject eventPopup = CreateCenteredPanel("EventPopup", overlayRoot.transform, new Vector2(760f, 520f), new Color(0.08f, 0.13f, 0.2f, 0.97f), true);
+            GameObject toasts = CreateBottomCenterPanel("Toasts", overlayRoot.transform, new Vector2(920f, 74f), new Vector2(0f, 24f), new Color(0.03f, 0.08f, 0.14f, 0.82f), true);
 
             // Resource bar UI.
             HorizontalLayoutGroup resourceLayout = resourceBar.AddComponent<HorizontalLayoutGroup>();
@@ -99,8 +106,8 @@ namespace FrozenFrontier.Util.Editor
             resourceLayout.childControlHeight = true;
             resourceLayout.childForceExpandWidth = false;
             resourceLayout.childForceExpandHeight = true;
-            resourceLayout.spacing = 8f;
-            resourceLayout.padding = new RectOffset(14, 14, 10, 10);
+            resourceLayout.spacing = 6f;
+            resourceLayout.padding = new RectOffset(12, 12, 10, 10);
 
             Text woodText = CreateValueText(resourceBar.transform, "WoodText", "Wood 0/0", font, 150);
             Text foodText = CreateValueText(resourceBar.transform, "FoodText", "Food 0/0", font, 150);
@@ -114,112 +121,88 @@ namespace FrozenFrontier.Util.Editor
             Button topSaveButton = CreateButton(resourceBar.transform, "TopSaveButton", "Save", font, 110, 44);
 
             // Left menu UI.
-            VerticalLayoutGroup leftLayout = leftMenu.AddComponent<VerticalLayoutGroup>();
-            leftLayout.spacing = 12f;
-            leftLayout.childControlHeight = false;
-            leftLayout.childControlWidth = true;
-            leftLayout.childForceExpandHeight = false;
-            leftLayout.childForceExpandWidth = true;
-            leftLayout.padding = new RectOffset(20, 20, 22, 22);
+            VerticalLayoutGroup actionLayout = actionMenu.AddComponent<VerticalLayoutGroup>();
+            actionLayout.spacing = 12f;
+            actionLayout.childControlHeight = false;
+            actionLayout.childControlWidth = true;
+            actionLayout.childForceExpandHeight = false;
+            actionLayout.childForceExpandWidth = true;
+            actionLayout.padding = new RectOffset(20, 20, 22, 22);
 
-            CreateHeader(leftMenu.transform, "MenuHeader", "Frozen Frontier", font, 24);
-            Button buildButton = CreateButton(leftMenu.transform, "BuildButton", "Build", font, 180, 54);
-            Button survivorsButton = CreateButton(leftMenu.transform, "SurvivorsButton", "Survivors", font, 180, 54);
-            Button mapButton = CreateButton(leftMenu.transform, "MapButton", "Map", font, 180, 54);
-            Button saveButton = CreateButton(leftMenu.transform, "SaveButton", "Save", font, 180, 54);
+            CreateHeader(actionMenu.transform, "MenuHeader", "Frozen Frontier", font, 24);
+            Button buildButton = CreateButton(actionMenu.transform, "BuildButton", "Build", font, 0, 54);
+            Button survivorsButton = CreateButton(actionMenu.transform, "SurvivorsButton", "Survivors", font, 0, 54);
+            Button mapButton = CreateButton(actionMenu.transform, "MapButton", "Map", font, 0, 54);
+            Button saveButton = CreateButton(actionMenu.transform, "SaveButton", "Save", font, 0, 54);
 
             // Build panel UI.
             BuildMenuUI buildMenuUI = buildPanel.AddComponent<BuildMenuUI>();
-            VerticalLayoutGroup buildLayout = buildPanel.AddComponent<VerticalLayoutGroup>();
-            buildLayout.padding = new RectOffset(16, 16, 16, 16);
-            buildLayout.spacing = 8f;
-            buildLayout.childControlHeight = false;
-            buildLayout.childControlWidth = true;
-            buildLayout.childForceExpandHeight = false;
-            buildLayout.childForceExpandWidth = true;
+            RectTransform buildContent = ConfigureScrollableContent(buildPanel, new RectOffset(16, 16, 16, 16), 8f);
 
-            CreateHeader(buildPanel.transform, "BuildHeader", "Build & Upgrade", font, 28);
-            Button buildShelter = CreateButton(buildPanel.transform, "BuildShelterButton", "Build Shelter (HQ)", font, 0, 44);
-            Button buildHeater = CreateButton(buildPanel.transform, "BuildHeaterButton", "Build Heater", font, 0, 44);
-            Button buildLumber = CreateButton(buildPanel.transform, "BuildLumberMillButton", "Build Lumber Mill", font, 0, 44);
-            Button buildKitchen = CreateButton(buildPanel.transform, "BuildKitchenButton", "Build Kitchen", font, 0, 44);
-            Button buildStorage = CreateButton(buildPanel.transform, "BuildStorageButton", "Build Storage", font, 0, 44);
-            Button buildGenerator = CreateButton(buildPanel.transform, "BuildGeneratorButton", "Build Generator", font, 0, 44);
+            CreateHeader(buildContent, "BuildHeader", "Build & Upgrade", font, 28);
+            Button buildShelter = CreateButton(buildContent, "BuildShelterButton", "Build Shelter (HQ)", font, 0, 44);
+            Button buildHeater = CreateButton(buildContent, "BuildHeaterButton", "Build Heater", font, 0, 44);
+            Button buildLumber = CreateButton(buildContent, "BuildLumberMillButton", "Build Lumber Mill", font, 0, 44);
+            Button buildKitchen = CreateButton(buildContent, "BuildKitchenButton", "Build Kitchen", font, 0, 44);
+            Button buildStorage = CreateButton(buildContent, "BuildStorageButton", "Build Storage", font, 0, 44);
+            Button buildGenerator = CreateButton(buildContent, "BuildGeneratorButton", "Build Generator", font, 0, 44);
 
-            CreateHeader(buildPanel.transform, "UpgradeHeader", "Upgrades", font, 22);
-            Button upgradeShelter = CreateButton(buildPanel.transform, "UpgradeShelterButton", "Upgrade Shelter", font, 0, 40);
-            Button upgradeHeater = CreateButton(buildPanel.transform, "UpgradeHeaterButton", "Upgrade Heater", font, 0, 40);
-            Button upgradeLumber = CreateButton(buildPanel.transform, "UpgradeLumberMillButton", "Upgrade Lumber Mill", font, 0, 40);
-            Button upgradeKitchen = CreateButton(buildPanel.transform, "UpgradeKitchenButton", "Upgrade Kitchen", font, 0, 40);
-            Button upgradeStorage = CreateButton(buildPanel.transform, "UpgradeStorageButton", "Upgrade Storage", font, 0, 40);
-            Button upgradeGenerator = CreateButton(buildPanel.transform, "UpgradeGeneratorButton", "Upgrade Generator", font, 0, 40);
-            Button cancelPlacement = CreateButton(buildPanel.transform, "CancelPlacementButton", "Cancel Placement (Esc)", font, 0, 40);
-            Text buildSummary = CreateMultilineText(buildPanel.transform, "SummaryText", "Placed: 0", font, 18, 220);
+            CreateHeader(buildContent, "UpgradeHeader", "Upgrades", font, 22);
+            Button upgradeShelter = CreateButton(buildContent, "UpgradeShelterButton", "Upgrade Shelter", font, 0, 40);
+            Button upgradeHeater = CreateButton(buildContent, "UpgradeHeaterButton", "Upgrade Heater", font, 0, 40);
+            Button upgradeLumber = CreateButton(buildContent, "UpgradeLumberMillButton", "Upgrade Lumber Mill", font, 0, 40);
+            Button upgradeKitchen = CreateButton(buildContent, "UpgradeKitchenButton", "Upgrade Kitchen", font, 0, 40);
+            Button upgradeStorage = CreateButton(buildContent, "UpgradeStorageButton", "Upgrade Storage", font, 0, 40);
+            Button upgradeGenerator = CreateButton(buildContent, "UpgradeGeneratorButton", "Upgrade Generator", font, 0, 40);
+            Button cancelPlacement = CreateButton(buildContent, "CancelPlacementButton", "Cancel Placement (Esc)", font, 0, 40);
+            Text buildSummary = CreateMultilineText(buildContent, "SummaryText", "Placed: 0", font, 18, 220);
 
             // Survivor panel UI.
             SurvivorPanelUI survivorPanelUI = survivorPanel.AddComponent<SurvivorPanelUI>();
-            VerticalLayoutGroup survivorLayout = survivorPanel.AddComponent<VerticalLayoutGroup>();
-            survivorLayout.padding = new RectOffset(16, 16, 16, 16);
-            survivorLayout.spacing = 8f;
-            survivorLayout.childControlHeight = false;
-            survivorLayout.childControlWidth = true;
-            survivorLayout.childForceExpandHeight = false;
-            survivorLayout.childForceExpandWidth = true;
+            RectTransform survivorContent = ConfigureScrollableContent(survivorPanel, new RectOffset(16, 16, 16, 16), 8f);
 
-            CreateHeader(survivorPanel.transform, "SurvivorHeader", "Survivor Management", font, 28);
-            Button assignLumber = CreateButton(survivorPanel.transform, "AssignLumberjackButton", "Assign Lumberjack", font, 0, 40);
-            Button assignCook = CreateButton(survivorPanel.transform, "AssignCookButton", "Assign Cook", font, 0, 40);
-            Button assignBuilder = CreateButton(survivorPanel.transform, "AssignBuilderButton", "Assign Builder", font, 0, 40);
-            Button assignExplorer = CreateButton(survivorPanel.transform, "AssignExplorerButton", "Assign Explorer", font, 0, 40);
-            Button assignMedic = CreateButton(survivorPanel.transform, "AssignMedicButton", "Assign Medic", font, 0, 40);
-            Button assignCollector = CreateButton(survivorPanel.transform, "AssignCollectorButton", "Assign Collector", font, 0, 40);
-            Button resetJobs = CreateButton(survivorPanel.transform, "ResetJobsButton", "Reset All Jobs", font, 0, 40);
-            Text survivorSummary = CreateMultilineText(survivorPanel.transform, "SummaryText", "Population 0/0", font, 18, 90);
-            Text survivorList = CreateMultilineText(survivorPanel.transform, "ListText", "No survivors.", font, 16, 260);
+            CreateHeader(survivorContent, "SurvivorHeader", "Survivor Management", font, 28);
+            Button assignLumber = CreateButton(survivorContent, "AssignLumberjackButton", "Assign Lumberjack", font, 0, 40);
+            Button assignCook = CreateButton(survivorContent, "AssignCookButton", "Assign Cook", font, 0, 40);
+            Button assignBuilder = CreateButton(survivorContent, "AssignBuilderButton", "Assign Builder", font, 0, 40);
+            Button assignExplorer = CreateButton(survivorContent, "AssignExplorerButton", "Assign Explorer", font, 0, 40);
+            Button assignMedic = CreateButton(survivorContent, "AssignMedicButton", "Assign Medic", font, 0, 40);
+            Button assignCollector = CreateButton(survivorContent, "AssignCollectorButton", "Assign Collector", font, 0, 40);
+            Button resetJobs = CreateButton(survivorContent, "ResetJobsButton", "Reset All Jobs", font, 0, 40);
+            Text survivorSummary = CreateMultilineText(survivorContent, "SummaryText", "Population 0/0", font, 18, 90);
+            Text survivorList = CreateMultilineText(survivorContent, "ListText", "No survivors.", font, 16, 260);
 
             // Map panel UI.
             MapUI mapUI = mapPanel.AddComponent<MapUI>();
-            VerticalLayoutGroup mapLayout = mapPanel.AddComponent<VerticalLayoutGroup>();
-            mapLayout.padding = new RectOffset(16, 16, 16, 16);
-            mapLayout.spacing = 8f;
-            mapLayout.childControlHeight = false;
-            mapLayout.childControlWidth = true;
-            mapLayout.childForceExpandHeight = false;
-            mapLayout.childForceExpandWidth = true;
+            RectTransform mapContent = ConfigureScrollableContent(mapPanel, new RectOffset(16, 16, 16, 16), 8f);
 
-            CreateHeader(mapPanel.transform, "MapHeader", "Map Exploration", font, 28);
-            Text mapSummary = CreateMultilineText(mapPanel.transform, "SummaryText", "Map 64x64", font, 18, 60);
-            Button unlockFirst = CreateButton(mapPanel.transform, "UnlockFirstButton", "Unlock First Adjacent Tile", font, 0, 42);
-            Button exploreFirst = CreateButton(mapPanel.transform, "ExploreFirstButton", "Explore First Unlocked Tile", font, 0, 42);
+            CreateHeader(mapContent, "MapHeader", "Map Exploration", font, 28);
+            Text mapSummary = CreateMultilineText(mapContent, "SummaryText", "Map 64x64", font, 18, 60);
+            Button unlockFirst = CreateButton(mapContent, "UnlockFirstButton", "Unlock First Adjacent Tile", font, 0, 42);
+            Button exploreFirst = CreateButton(mapContent, "ExploreFirstButton", "Explore First Unlocked Tile", font, 0, 42);
 
             GameObject tileRoot = new GameObject("TileRoot", typeof(RectTransform), typeof(GridLayoutGroup));
-            tileRoot.transform.SetParent(mapPanel.transform, false);
+            tileRoot.transform.SetParent(mapContent, false);
             GridLayoutGroup grid = tileRoot.GetComponent<GridLayoutGroup>();
             grid.cellSize = new Vector2(118f, 64f);
             grid.spacing = new Vector2(6f, 6f);
             grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             grid.constraintCount = 5;
             LayoutElement tileRootLayout = tileRoot.AddComponent<LayoutElement>();
-            tileRootLayout.preferredHeight = 380f;
+            tileRootLayout.preferredHeight = 420f;
 
             Button tileTemplate = CreateButton(tileRoot.transform, "TileButtonTemplate", "0,0", font, 118, 64);
             tileTemplate.gameObject.SetActive(false);
 
             // Event popup UI.
             EventPopupUI eventPopupUI = eventPopup.AddComponent<EventPopupUI>();
-            VerticalLayoutGroup popupLayout = eventPopup.AddComponent<VerticalLayoutGroup>();
-            popupLayout.padding = new RectOffset(16, 16, 16, 16);
-            popupLayout.spacing = 10f;
-            popupLayout.childControlHeight = false;
-            popupLayout.childControlWidth = true;
-            popupLayout.childForceExpandHeight = false;
-            popupLayout.childForceExpandWidth = true;
+            RectTransform popupContent = ConfigureScrollableContent(eventPopup, new RectOffset(16, 16, 16, 16), 10f);
 
-            Text eventTitle = CreateHeader(eventPopup.transform, "TitleText", "Event", font, 30);
-            Text eventDescription = CreateMultilineText(eventPopup.transform, "DescriptionText", "Event description.", font, 18, 160);
-            Button choice1 = CreateButton(eventPopup.transform, "ChoiceButton_1", "Choice 1", font, 0, 48);
-            Button choice2 = CreateButton(eventPopup.transform, "ChoiceButton_2", "Choice 2", font, 0, 48);
-            Button choice3 = CreateButton(eventPopup.transform, "ChoiceButton_3", "Choice 3", font, 0, 48);
+            Text eventTitle = CreateHeader(popupContent, "TitleText", "Event", font, 30);
+            Text eventDescription = CreateMultilineText(popupContent, "DescriptionText", "Event description.", font, 18, 220);
+            Button choice1 = CreateButton(popupContent, "ChoiceButton_1", "Choice 1", font, 0, 52);
+            Button choice2 = CreateButton(popupContent, "ChoiceButton_2", "Choice 2", font, 0, 52);
+            Button choice3 = CreateButton(popupContent, "ChoiceButton_3", "Choice 3", font, 0, 52);
 
             // Toast UI.
             ToastUI toastUI = toasts.AddComponent<ToastUI>();
@@ -436,7 +419,7 @@ namespace FrozenFrontier.Util.Editor
             return panel;
         }
 
-        private static GameObject CreateLeftPanel(string name, Transform parent, float width, float topInset, float bottomInset, Color bgColor, bool emphasized)
+        private static GameObject CreateActionMenuPanel(string name, Transform parent, float width, float topInset, float bottomInset, Color bgColor, bool emphasized)
         {
             GameObject panel = new GameObject(name, typeof(RectTransform), typeof(Image));
             panel.transform.SetParent(parent, false);
@@ -452,15 +435,32 @@ namespace FrozenFrontier.Util.Editor
             return panel;
         }
 
-        private static GameObject CreateContentPanel(string name, Transform parent, float leftInset, float topInset, float rightInset, float bottomInset, Color bgColor, bool emphasized)
+        private static GameObject CreateContextPanelHost(string name, Transform parent, float width, float topInset, float rightInset, float bottomInset, Color bgColor)
+        {
+            GameObject panel = new GameObject(name, typeof(RectTransform), typeof(Image));
+            panel.transform.SetParent(parent, false);
+            RectTransform rt = panel.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(1f, 0f);
+            rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(1f, 0.5f);
+            rt.offsetMin = new Vector2(-width - rightInset, bottomInset);
+            rt.offsetMax = new Vector2(-rightInset, -topInset);
+
+            Image image = panel.GetComponent<Image>();
+            image.color = bgColor;
+            StylePanelGraphic(image, false);
+            return panel;
+        }
+
+        private static GameObject CreateContextContentPanel(string name, Transform parent, Color bgColor, bool emphasized)
         {
             GameObject panel = new GameObject(name, typeof(RectTransform), typeof(Image));
             panel.transform.SetParent(parent, false);
             RectTransform rt = panel.GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
-            rt.offsetMin = new Vector2(leftInset, bottomInset);
-            rt.offsetMax = new Vector2(-rightInset, -topInset);
+            rt.offsetMin = new Vector2(10f, 10f);
+            rt.offsetMax = new Vector2(-10f, -10f);
 
             Image image = panel.GetComponent<Image>();
             image.color = bgColor;
@@ -483,6 +483,69 @@ namespace FrozenFrontier.Util.Editor
             image.color = bgColor;
             StylePanelGraphic(image, emphasized);
             return panel;
+        }
+
+        private static GameObject CreateOverlayRoot(string name, Transform parent)
+        {
+            GameObject root = new GameObject(name, typeof(RectTransform));
+            root.transform.SetParent(parent, false);
+            RectTransform rt = root.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            return root;
+        }
+
+        private static RectTransform ConfigureScrollableContent(GameObject panel, RectOffset padding, float spacing)
+        {
+            if (panel == null)
+            {
+                return null;
+            }
+
+            ScrollRect scrollRect = panel.GetComponent<ScrollRect>() ?? panel.AddComponent<ScrollRect>();
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            scrollRect.inertia = true;
+            scrollRect.scrollSensitivity = 28f;
+
+            GameObject viewport = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
+            viewport.transform.SetParent(panel.transform, false);
+            RectTransform viewportRt = viewport.GetComponent<RectTransform>();
+            viewportRt.anchorMin = Vector2.zero;
+            viewportRt.anchorMax = Vector2.one;
+            viewportRt.offsetMin = Vector2.zero;
+            viewportRt.offsetMax = Vector2.zero;
+            Image viewportImage = viewport.GetComponent<Image>();
+            viewportImage.color = new Color(0f, 0f, 0f, 0.001f);
+            viewportImage.raycastTarget = true;
+
+            GameObject content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            content.transform.SetParent(viewport.transform, false);
+            RectTransform contentRt = content.GetComponent<RectTransform>();
+            contentRt.anchorMin = new Vector2(0f, 1f);
+            contentRt.anchorMax = new Vector2(1f, 1f);
+            contentRt.pivot = new Vector2(0.5f, 1f);
+            contentRt.anchoredPosition = Vector2.zero;
+            contentRt.sizeDelta = Vector2.zero;
+
+            VerticalLayoutGroup layout = content.GetComponent<VerticalLayoutGroup>();
+            layout.padding = padding ?? new RectOffset(16, 16, 16, 16);
+            layout.spacing = spacing;
+            layout.childControlHeight = false;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childForceExpandWidth = true;
+
+            ContentSizeFitter fitter = content.GetComponent<ContentSizeFitter>();
+            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            scrollRect.viewport = viewportRt;
+            scrollRect.content = contentRt;
+            return contentRt;
         }
 
         private static GameObject CreateBottomCenterPanel(string name, Transform parent, Vector2 size, Vector2 offset, Color bgColor, bool emphasized)

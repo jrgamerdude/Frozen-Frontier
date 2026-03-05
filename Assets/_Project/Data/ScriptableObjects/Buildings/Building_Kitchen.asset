@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 714ad0be7441cab40ab1fac981cd0383, type: 3}
+  m_Name: Building_Kitchen
+  m_EditorClassIdentifier: Assembly-CSharp::FrozenFrontier.Data.BuildingDef
+  id: kitchen
+  displayName: Kitchen
+  icon: {fileID: 0}
+  size: {x: 1, y: 1}
+  workerSlots: 2
+  maxLevel: 3
+  levels:
+  - buildCosts:
+    - type: 0
+      amount: 30
+    - type: 3
+      amount: 15
+    perTickProduction:
+    - type: 1
+      amount: 3
+    perTickConsumption:
+    - type: 0
+      amount: 1
+    - type: 1
+      amount: 1
+    heatDeltaPerTick: 0
+    powerDeltaPerTick: 0
+    survivorCapBonus: 0
+    storageCapBonus: 0
+    noWorkerOutputMultiplier: 0.2
+  - buildCosts:
+    - type: 0
+      amount: 45
+    - type: 3
+      amount: 25
+    perTickProduction:
+    - type: 1
+      amount: 5
+    perTickConsumption:
+    - type: 0
+      amount: 1
+    - type: 1
+      amount: 1
+    heatDeltaPerTick: 0
+    powerDeltaPerTick: 0
+    survivorCapBonus: 0
+    storageCapBonus: 0
+    noWorkerOutputMultiplier: 0.2
+  - buildCosts:
+    - type: 0
+      amount: 60
+    - type: 3
+      amount: 35
+    perTickProduction:
+    - type: 1
+      amount: 8
+    perTickConsumption:
+    - type: 0
+      amount: 2
+    - type: 1
+      amount: 1
+    heatDeltaPerTick: 0
+    powerDeltaPerTick: 0
+    survivorCapBonus: 0
+    storageCapBonus: 0
+    noWorkerOutputMultiplier: 0.2

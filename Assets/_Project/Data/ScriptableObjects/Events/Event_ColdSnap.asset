@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e8d0ea3053622c45ababc8c753a9193, type: 3}
+  m_Name: Event_ColdSnap
+  m_EditorClassIdentifier: Assembly-CSharp::FrozenFrontier.Data.EventDef
+  id: event_cold_snap
+  title: Cold Snap
+  description: A brutal cold front arrives overnight.
+  choices:
+  - id: burn_extra_fuel
+    label: Burn extra fuel
+    costs:
+    - type: 2
+      amount: 6
+    outcome:
+      resourceDeltas: []
+      heatDelta: 10
+      moraleDelta: 2
+      healthDelta: 0
+      resultText: The settlement stays warm.
+  - id: hold_position
+    label: Conserve supplies
+    costs: []
+    outcome:
+      resourceDeltas: []
+      heatDelta: -6
+      moraleDelta: -4
+      healthDelta: -2
+      resultText: The cold bites hard.

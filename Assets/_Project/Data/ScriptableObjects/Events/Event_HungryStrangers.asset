@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e8d0ea3053622c45ababc8c753a9193, type: 3}
+  m_Name: Event_HungryStrangers
+  m_EditorClassIdentifier: Assembly-CSharp::FrozenFrontier.Data.EventDef
+  id: event_hungry_strangers
+  title: Hungry Strangers
+  description: Travelers ask for food and shelter.
+  choices:
+  - id: share_food
+    label: Share supplies
+    costs:
+    - type: 1
+      amount: 10
+    outcome:
+      resourceDeltas: []
+      heatDelta: 0
+      moraleDelta: 6
+      healthDelta: 0
+      resultText: Compassion lifts morale.
+  - id: turn_away
+    label: Turn them away
+    costs: []
+    outcome:
+      resourceDeltas: []
+      heatDelta: 0
+      moraleDelta: -5
+      healthDelta: 0
+      resultText: The camp feels colder.
+  - id: trade
+    label: Trade for scrap
+    costs:
+    - type: 1
+      amount: 6
+    outcome:
+      resourceDeltas:
+      - type: 3
+        amount: 10
+      heatDelta: 0
+      moraleDelta: 1
+      healthDelta: 0
+      resultText: A hard but fair deal.

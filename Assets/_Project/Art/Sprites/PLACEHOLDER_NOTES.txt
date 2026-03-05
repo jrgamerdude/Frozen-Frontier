@@ -1,0 +1,5 @@
+Use simple placeholder visuals for MVP:
+- 1-color square sprites for buildings
+- circle or capsule sprite for survivors
+- tinted tile sprites for map cells
+- avoid copyrighted or franchise-specific art

@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 714ad0be7441cab40ab1fac981cd0383, type: 3}
+  m_Name: Building_Heater
+  m_EditorClassIdentifier: Assembly-CSharp::FrozenFrontier.Data.BuildingDef
+  id: heater
+  displayName: Heater
+  icon: {fileID: 0}
+  size: {x: 1, y: 1}
+  workerSlots: 1
+  maxLevel: 3
+  levels:
+  - buildCosts:
+    - type: 0
+      amount: 25
+    - type: 3
+      amount: 20
+    - type: 2
+      amount: 5
+    perTickProduction: []
+    perTickConsumption:
+    - type: 2
+      amount: 1
+    heatDeltaPerTick: 4
+    powerDeltaPerTick: 0
+    survivorCapBonus: 0
+    storageCapBonus: 0
+    noWorkerOutputMultiplier: 0.2
+  - buildCosts:
+    - type: 0
+      amount: 35
+    - type: 3
+      amount: 25
+    perTickProduction: []
+    perTickConsumption:
+    - type: 2
+      amount: 1
+    heatDeltaPerTick: 6
+    powerDeltaPerTick: 0
+    survivorCapBonus: 0
+    storageCapBonus: 0
+    noWorkerOutputMultiplier: 0.2
+  - buildCosts:
+    - type: 0
+      amount: 55
+    - type: 3
+      amount: 35
+    perTickProduction: []
+    perTickConsumption:
+    - type: 2
+      amount: 2
+    heatDeltaPerTick: 10
+    powerDeltaPerTick: 0
+    survivorCapBonus: 0
+    storageCapBonus: 0
+    noWorkerOutputMultiplier: 0.2

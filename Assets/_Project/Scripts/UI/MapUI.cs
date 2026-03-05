@@ -20,6 +20,11 @@ namespace FrozenFrontier.UI
         private MapSystem mapSystem;
         private bool useButtonGrid;
 
+        private void Awake()
+        {
+            UiScrollLayoutHelper.EnsureVerticalScroll(transform as RectTransform);
+        }
+
         public void Bind(MapSystem map)
         {
             Unbind();

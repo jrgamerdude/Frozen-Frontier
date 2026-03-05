@@ -25,6 +25,11 @@ namespace FrozenFrontier.UI
 
         private SurvivorSystem survivorSystem;
 
+        private void Awake()
+        {
+            UiScrollLayoutHelper.EnsureVerticalScroll(transform as RectTransform);
+        }
+
         public void Bind(SurvivorSystem survivors)
         {
             Unbind();

@@ -37,6 +37,11 @@ namespace FrozenFrontier.UI
         private BuildingSystem buildingSystem;
         private GameManager gameManager;
 
+        private void Awake()
+        {
+            UiScrollLayoutHelper.EnsureVerticalScroll(transform as RectTransform);
+        }
+
         public void Bind(BuildingSystem buildings, GameManager manager)
         {
             Unbind();
@@ -212,6 +217,119 @@ namespace FrozenFrontier.UI
         private void OnPlacementModeChanged(BuildingDef _)
         {
             Refresh();
+        }
+    }
+
+    internal static class UiScrollLayoutHelper
+    {
+        private const string ViewportName = "__Viewport";
+        private const string ContentName = "__Content";
+
+        public static void EnsureVerticalScroll(RectTransform panelRoot)
+        {
+            if (panelRoot == null)
+            {
+                return;
+            }
+
+            ScrollRect existing = panelRoot.GetComponent<ScrollRect>();
+            if (existing != null && existing.content != null && existing.viewport != null)
+            {
+                return;
+            }
+
+            List<Transform> childrenToMove = new List<Transform>();
+            for (int i = 0; i < panelRoot.childCount; i++)
+            {
+                Transform child = panelRoot.GetChild(i);
+                if (child == null)
+                {
+                    continue;
+                }
+
+                childrenToMove.Add(child);
+            }
+
+            GameObject viewportGo = new GameObject(ViewportName, typeof(RectTransform), typeof(Image), typeof(Mask));
+            RectTransform viewportRect = viewportGo.GetComponent<RectTransform>();
+            viewportRect.SetParent(panelRoot, false);
+            viewportRect.anchorMin = Vector2.zero;
+            viewportRect.anchorMax = Vector2.one;
+            viewportRect.offsetMin = Vector2.zero;
+            viewportRect.offsetMax = Vector2.zero;
+
+            Image viewportImage = viewportGo.GetComponent<Image>();
+            viewportImage.color = new Color(0f, 0f, 0f, 0f);
+            viewportImage.raycastTarget = true;
+
+            Mask viewportMask = viewportGo.GetComponent<Mask>();
+            viewportMask.showMaskGraphic = false;
+
+            GameObject contentGo = new GameObject(ContentName, typeof(RectTransform));
+            RectTransform contentRect = contentGo.GetComponent<RectTransform>();
+            contentRect.SetParent(viewportRect, false);
+            contentRect.anchorMin = new Vector2(0f, 1f);
+            contentRect.anchorMax = new Vector2(1f, 1f);
+            contentRect.pivot = new Vector2(0.5f, 1f);
+            contentRect.anchoredPosition = Vector2.zero;
+            contentRect.sizeDelta = Vector2.zero;
+
+            for (int i = 0; i < childrenToMove.Count; i++)
+            {
+                Transform child = childrenToMove[i];
+                if (child == null)
+                {
+                    continue;
+                }
+
+                if (child == viewportRect)
+                {
+                    continue;
+                }
+
+                child.SetParent(contentRect, false);
+            }
+
+            VerticalLayoutGroup sourceLayout = panelRoot.GetComponent<VerticalLayoutGroup>();
+            if (sourceLayout != null)
+            {
+                VerticalLayoutGroup targetLayout = contentGo.AddComponent<VerticalLayoutGroup>();
+                targetLayout.padding = sourceLayout.padding;
+                targetLayout.spacing = sourceLayout.spacing;
+                targetLayout.childAlignment = sourceLayout.childAlignment;
+                targetLayout.childControlWidth = sourceLayout.childControlWidth;
+                targetLayout.childControlHeight = sourceLayout.childControlHeight;
+                targetLayout.childForceExpandWidth = sourceLayout.childForceExpandWidth;
+                targetLayout.childForceExpandHeight = sourceLayout.childForceExpandHeight;
+                targetLayout.childScaleWidth = sourceLayout.childScaleWidth;
+                targetLayout.childScaleHeight = sourceLayout.childScaleHeight;
+                targetLayout.reverseArrangement = sourceLayout.reverseArrangement;
+                sourceLayout.enabled = false;
+            }
+
+            ContentSizeFitter sourceFitter = panelRoot.GetComponent<ContentSizeFitter>();
+            if (sourceFitter != null)
+            {
+                ContentSizeFitter targetFitter = contentGo.AddComponent<ContentSizeFitter>();
+                targetFitter.horizontalFit = sourceFitter.horizontalFit;
+                targetFitter.verticalFit = sourceFitter.verticalFit;
+                sourceFitter.enabled = false;
+            }
+            else
+            {
+                ContentSizeFitter targetFitter = contentGo.AddComponent<ContentSizeFitter>();
+                targetFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+                targetFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            }
+
+            ScrollRect scrollRect = existing != null ? existing : panelRoot.gameObject.AddComponent<ScrollRect>();
+            scrollRect.viewport = viewportRect;
+            scrollRect.content = contentRect;
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+            scrollRect.inertia = true;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            scrollRect.scrollSensitivity = 28f;
         }
     }
 }

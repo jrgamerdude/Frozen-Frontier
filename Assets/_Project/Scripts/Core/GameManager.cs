@@ -47,6 +47,11 @@ namespace FrozenFrontier.Core
         [Header("Autosave")]
         [SerializeField, Min(5f)] private float autoSaveIntervalSeconds = 30f;
 
+        [Header("Display")]
+        [SerializeField] private bool forceNativeFullscreenOnStart = true;
+        [SerializeField] private FullScreenMode fullscreenModeOnStart = FullScreenMode.FullScreenWindow;
+        [SerializeField] private bool applyResolutionInEditor = false;
+
         private float autosaveTimer;
         private bool isBootstrapped;
         private ViewState currentState = ViewState.Base;
@@ -66,6 +71,7 @@ namespace FrozenFrontier.Core
 
         private void Start()
         {
+            ApplyDisplaySettings();
             Bootstrap();
         }
 
@@ -331,6 +337,38 @@ namespace FrozenFrontier.Core
             }
 
             return true;
+        }
+
+        private void ApplyDisplaySettings()
+        {
+            if (!forceNativeFullscreenOnStart)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            if (!applyResolutionInEditor)
+            {
+                return;
+            }
+#endif
+
+            int width = Screen.currentResolution.width;
+            int height = Screen.currentResolution.height;
+
+            if ((width <= 0 || height <= 0) && Display.main != null)
+            {
+                width = Display.main.systemWidth;
+                height = Display.main.systemHeight;
+            }
+
+            if (width <= 0 || height <= 0)
+            {
+                return;
+            }
+
+            Screen.fullScreenMode = fullscreenModeOnStart;
+            Screen.SetResolution(width, height, fullscreenModeOnStart);
         }
 
         private void ShowToast(string message)

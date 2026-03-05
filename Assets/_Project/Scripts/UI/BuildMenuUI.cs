@@ -40,6 +40,7 @@ namespace FrozenFrontier.UI
         private void Awake()
         {
             UiScrollLayoutHelper.EnsureVerticalScroll(transform as RectTransform);
+            UiScrollLayoutHelper.ConfigureMultilineText(summaryText);
         }
 
         public void Bind(BuildingSystem buildings, GameManager manager)
@@ -154,6 +155,7 @@ namespace FrozenFrontier.UI
                 Text buttonText = button.GetComponentInChildren<Text>();
                 if (buttonText != null)
                 {
+                    UiScrollLayoutHelper.ConfigureButtonLabel(buttonText);
                     buttonText.text = $"Place {def.displayName}";
                 }
 
@@ -330,6 +332,43 @@ namespace FrozenFrontier.UI
             scrollRect.inertia = true;
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
             scrollRect.scrollSensitivity = 28f;
+        }
+
+        public static void ConfigureMultilineText(Text text)
+        {
+            if (text == null)
+            {
+                return;
+            }
+
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.supportRichText = false;
+        }
+
+        public static void ConfigureButtonLabel(Text text)
+        {
+            if (text == null)
+            {
+                return;
+            }
+
+            text.alignment = TextAnchor.MiddleCenter;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.supportRichText = false;
+        }
+
+        public static void ConfigureSingleLineText(Text text)
+        {
+            if (text == null)
+            {
+                return;
+            }
+
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.supportRichText = false;
         }
     }
 }

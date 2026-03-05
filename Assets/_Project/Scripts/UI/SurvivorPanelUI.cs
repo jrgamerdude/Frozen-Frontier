@@ -1,3 +1,4 @@
+using System.Text;
 using FrozenFrontier.Data;
 using FrozenFrontier.Systems;
 using UnityEngine;
@@ -28,6 +29,8 @@ namespace FrozenFrontier.UI
         private void Awake()
         {
             UiScrollLayoutHelper.EnsureVerticalScroll(transform as RectTransform);
+            UiScrollLayoutHelper.ConfigureMultilineText(summaryText);
+            UiScrollLayoutHelper.ConfigureMultilineText(listText);
         }
 
         public void Bind(SurvivorSystem survivors)
@@ -111,16 +114,25 @@ namespace FrozenFrontier.UI
 
             if (listText != null)
             {
-                string text = "";
+                StringBuilder sb = new StringBuilder(256);
                 for (int i = 0; i < survivorSystem.Survivors.Count; i++)
                 {
                     SurvivorRuntimeData survivor = survivorSystem.Survivors[i];
-                    text +=
-                        $"{survivor.displayName} | {survivor.job} | H:{survivor.health} M:{survivor.morale} " +
-                        $"Hu:{survivor.hunger} W:{survivor.warmth}\n";
+                    sb.Append(survivor.displayName)
+                        .Append(" | ")
+                        .Append(survivor.job)
+                        .Append(" | H:")
+                        .Append(survivor.health)
+                        .Append(" M:")
+                        .Append(survivor.morale)
+                        .Append(" Hu:")
+                        .Append(survivor.hunger)
+                        .Append(" W:")
+                        .Append(survivor.warmth)
+                        .Append('\n');
                 }
 
-                listText.text = text.TrimEnd('\n');
+                listText.text = sb.ToString().TrimEnd('\n');
             }
         }
 

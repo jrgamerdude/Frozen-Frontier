@@ -23,6 +23,12 @@ namespace FrozenFrontier.UI
         private void Awake()
         {
             UiScrollLayoutHelper.EnsureVerticalScroll(transform as RectTransform);
+            UiScrollLayoutHelper.ConfigureMultilineText(summaryText);
+            if (tileButtonTemplate != null)
+            {
+                Text templateLabel = tileButtonTemplate.GetComponentInChildren<Text>();
+                UiScrollLayoutHelper.ConfigureButtonLabel(templateLabel);
+            }
         }
 
         public void Bind(MapSystem map)
@@ -171,6 +177,7 @@ namespace FrozenFrontier.UI
                 Text label = button.GetComponentInChildren<Text>();
                 if (label != null)
                 {
+                    UiScrollLayoutHelper.ConfigureButtonLabel(label);
                     label.text = $"{tile.x},{tile.y}";
                 }
 

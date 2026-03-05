@@ -11,6 +11,7 @@ namespace FrozenFrontier.UI
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField, Min(0.2f)] private float showDuration = 2f;
         [SerializeField, Min(0.05f)] private float fadeDuration = 0.25f;
+        [SerializeField, Min(1)] private int maxQueuedMessages = 6;
 
         private readonly Queue<string> queue = new Queue<string>();
         private Coroutine activeRoutine;
@@ -20,7 +21,11 @@ namespace FrozenFrontier.UI
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;
+                canvasGroup.interactable = false;
+                canvasGroup.blocksRaycasts = false;
             }
+
+            UiScrollLayoutHelper.ConfigureMultilineText(toastText);
         }
 
         public void Show(string message)
@@ -28,6 +33,12 @@ namespace FrozenFrontier.UI
             if (string.IsNullOrWhiteSpace(message))
             {
                 return;
+            }
+
+            int maxQueue = Mathf.Max(1, maxQueuedMessages);
+            while (queue.Count >= maxQueue)
+            {
+                queue.Dequeue();
             }
 
             queue.Enqueue(message);

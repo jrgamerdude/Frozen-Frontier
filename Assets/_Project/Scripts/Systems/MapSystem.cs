@@ -19,6 +19,7 @@ namespace FrozenFrontier.Systems
         private readonly Dictionary<string, MapTileRuntimeData> tilesById = new Dictionary<string, MapTileRuntimeData>();
         private readonly Dictionary<string, TileBiomeDef> biomeById = new Dictionary<string, TileBiomeDef>();
         private readonly List<TileBiomeDef> fallbackBiomes = new List<TileBiomeDef>();
+        private readonly List<MapTileRuntimeData> exploringTiles = new List<MapTileRuntimeData>();
         private System.Random rng;
 
         private ResourceSystem resourceSystem;
@@ -107,6 +108,7 @@ namespace FrozenFrontier.Systems
             TileBiomeDef biome = GetBiome(tile.biomeId);
             tile.exploreTicksRemaining = Mathf.Max(4, biome != null ? biome.exploreDurationTicks : 8);
             tile.isExploring = true;
+            AddExploringTile(tile);
             NotifyChanged();
             ToastRequested?.Invoke($"Exploration started on tile {tile.x},{tile.y}");
             return true;
@@ -136,11 +138,12 @@ namespace FrozenFrontier.Systems
         public void Tick(bool offlineMode)
         {
             bool changed = false;
-            for (int i = 0; i < tiles.Count; i++)
+            for (int i = exploringTiles.Count - 1; i >= 0; i--)
             {
-                MapTileRuntimeData tile = tiles[i];
-                if (!tile.isExploring)
+                MapTileRuntimeData tile = exploringTiles[i];
+                if (tile == null || !tile.isExploring)
                 {
+                    exploringTiles.RemoveAt(i);
                     continue;
                 }
 
@@ -188,6 +191,7 @@ namespace FrozenFrontier.Systems
         {
             tiles.Clear();
             tilesById.Clear();
+            exploringTiles.Clear();
             if (rng == null)
             {
                 rng = new System.Random(1337);
@@ -229,6 +233,7 @@ namespace FrozenFrontier.Systems
             }
 
             EnsureBiomes();
+            RebuildExploringTiles();
             NotifyChanged();
         }
 
@@ -275,6 +280,8 @@ namespace FrozenFrontier.Systems
                     TryAddTile(tile);
                 }
             }
+
+            RebuildExploringTiles();
         }
 
         private void EnsureBiomes()
@@ -384,6 +391,7 @@ namespace FrozenFrontier.Systems
             tile.isExploring = false;
             tile.exploreTicksRemaining = 0;
             tile.state = TileState.Cleared;
+            RemoveExploringTile(tile);
 
             if (biome != null && biome.baseRewards != null)
             {
@@ -549,6 +557,10 @@ namespace FrozenFrontier.Systems
             tile.id = id;
             tiles.Add(tile);
             tilesById[id] = tile;
+            if (tile.isExploring)
+            {
+                AddExploringTile(tile);
+            }
             return true;
         }
 
@@ -560,6 +572,42 @@ namespace FrozenFrontier.Systems
         private void NotifyChanged()
         {
             Changed?.Invoke();
+        }
+
+        private void AddExploringTile(MapTileRuntimeData tile)
+        {
+            if (tile == null || !tile.isExploring)
+            {
+                return;
+            }
+
+            if (!exploringTiles.Contains(tile))
+            {
+                exploringTiles.Add(tile);
+            }
+        }
+
+        private void RemoveExploringTile(MapTileRuntimeData tile)
+        {
+            if (tile == null)
+            {
+                return;
+            }
+
+            exploringTiles.Remove(tile);
+        }
+
+        private void RebuildExploringTiles()
+        {
+            exploringTiles.Clear();
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                MapTileRuntimeData tile = tiles[i];
+                if (tile != null && tile.isExploring)
+                {
+                    exploringTiles.Add(tile);
+                }
+            }
         }
     }
 }

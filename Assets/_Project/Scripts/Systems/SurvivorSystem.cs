@@ -13,11 +13,33 @@ namespace FrozenFrontier.Systems
         private readonly List<SurvivorRuntimeData> survivors = new List<SurvivorRuntimeData>();
         private ResourceSystem resourceSystem;
         private int survivorCapBonus;
+        private int changeBatchDepth;
+        private bool hasPendingChange;
 
         public event Action Changed;
 
         public int SurvivorCap => baseSurvivorCap + survivorCapBonus;
         public IReadOnlyList<SurvivorRuntimeData> Survivors => survivors;
+
+        public void BeginBatchChanges()
+        {
+            changeBatchDepth++;
+        }
+
+        public void EndBatchChanges()
+        {
+            if (changeBatchDepth <= 0)
+            {
+                return;
+            }
+
+            changeBatchDepth--;
+            if (changeBatchDepth == 0 && hasPendingChange)
+            {
+                hasPendingChange = false;
+                Changed?.Invoke();
+            }
+        }
 
         public void Initialize(ResourceSystem resources)
         {
@@ -157,21 +179,47 @@ namespace FrozenFrontier.Systems
             }
 
             // If nobody is idle, reassign from the largest existing non-target role.
-            int bestIndex = -1;
+            Dictionary<SurvivorJob, int> countsByJob = new Dictionary<SurvivorJob, int>();
             for (int i = 0; i < survivors.Count; i++)
             {
-                if (survivors[i].job != job)
+                SurvivorJob currentJob = survivors[i].job;
+                if (currentJob == SurvivorJob.Idle || currentJob == job)
                 {
-                    bestIndex = i;
-                    break;
+                    continue;
+                }
+
+                if (!countsByJob.TryGetValue(currentJob, out int currentCount))
+                {
+                    currentCount = 0;
+                }
+
+                countsByJob[currentJob] = currentCount + 1;
+            }
+
+            SurvivorJob donorJob = SurvivorJob.Idle;
+            int donorCount = 0;
+            foreach (KeyValuePair<SurvivorJob, int> pair in countsByJob)
+            {
+                if (pair.Value > donorCount)
+                {
+                    donorCount = pair.Value;
+                    donorJob = pair.Key;
                 }
             }
 
-            if (bestIndex >= 0)
+            if (donorCount <= 0)
             {
-                survivors[bestIndex].job = job;
-                NotifyChanged();
-                return true;
+                return false;
+            }
+
+            for (int i = 0; i < survivors.Count; i++)
+            {
+                if (survivors[i].job == donorJob)
+                {
+                    survivors[i].job = job;
+                    NotifyChanged();
+                    return true;
+                }
             }
 
             return false;
@@ -336,6 +384,12 @@ namespace FrozenFrontier.Systems
 
         private void NotifyChanged()
         {
+            if (changeBatchDepth > 0)
+            {
+                hasPendingChange = true;
+                return;
+            }
+
             Changed?.Invoke();
         }
     }

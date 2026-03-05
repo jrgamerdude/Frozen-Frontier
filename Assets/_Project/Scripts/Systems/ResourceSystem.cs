@@ -28,12 +28,34 @@ namespace FrozenFrontier.Systems
         private int storageBonus;
         private int heat;
         private int power;
+        private int changeBatchDepth;
+        private bool hasPendingChange;
 
         public event Action Changed;
 
         public int Heat => heat;
         public int Power => power;
         public int StorageBonus => storageBonus;
+
+        public void BeginBatchChanges()
+        {
+            changeBatchDepth++;
+        }
+
+        public void EndBatchChanges()
+        {
+            if (changeBatchDepth <= 0)
+            {
+                return;
+            }
+
+            changeBatchDepth--;
+            if (changeBatchDepth == 0 && hasPendingChange)
+            {
+                hasPendingChange = false;
+                Changed?.Invoke();
+            }
+        }
 
         public void InitializeDefaults()
         {
@@ -320,6 +342,12 @@ namespace FrozenFrontier.Systems
 
         public void NotifyChanged()
         {
+            if (changeBatchDepth > 0)
+            {
+                hasPendingChange = true;
+                return;
+            }
+
             Changed?.Invoke();
         }
     }

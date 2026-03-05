@@ -192,12 +192,27 @@ namespace FrozenFrontier.Core
 
         private void RunTick(bool offlineMode)
         {
-            // Natural heat decay forces the player to keep fuel + heaters running.
-            resourceSystem.ModifyHeat(-1);
-            buildingSystem.Tick(offlineMode);
-            survivorSystem.Tick(offlineMode);
-            mapSystem.Tick(offlineMode);
-            eventSystem.Tick(offlineMode);
+            if (resourceSystem == null || survivorSystem == null)
+            {
+                return;
+            }
+
+            resourceSystem.BeginBatchChanges();
+            survivorSystem.BeginBatchChanges();
+            try
+            {
+                // Natural heat decay forces the player to keep fuel + heaters running.
+                resourceSystem.ModifyHeat(-1);
+                buildingSystem.Tick(offlineMode);
+                survivorSystem.Tick(offlineMode);
+                mapSystem.Tick(offlineMode);
+                eventSystem.Tick(offlineMode);
+            }
+            finally
+            {
+                survivorSystem.EndBatchChanges();
+                resourceSystem.EndBatchChanges();
+            }
         }
 
         private void TryLoadAndApplySave()
